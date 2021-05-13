@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Algoritmo de Karatsuba</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Open+Sans+Condensed:ital,wght@0,300;1,300&family=Open+Sans:ital,wght@0,300;0,400;0,700;0,800;1,300;1,400;1,700;1,800&family=Oxygen+Mono&family=Poppins:ital,wght@0,300;0,700;1,300;1,700&display=swap">
+        <link rel="stylesheet" href="assets/css/reset.css">
+        <link rel="stylesheet" href="assets/css/highlight.css">
+        <link rel="stylesheet" href="assets/css/style.css">
+        <link rel="stylesheet" href="assets/css/color.css">
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+        <script src="assets/js/highlight.js"></script>
+        <script src="assets/js/script.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <a href="">abrir tudo</a>
+                <a href="">fechar tudo</a>
+            </header>
+            <main>
+
+<h1>Algoritmo de Karatsuba</h1>
+<div class="animation"><img class="frame" src="img/present/1.png" alt="1"><img class="frame" src="img/present/2.png" alt="2"><img class="frame" src="img/present/3.png" alt="3"><img class="frame" src="img/present/4.png" alt="4"><img class="frame" src="img/present/5.png" alt="5"><img class="frame" src="img/present/6.png" alt="6"></div>
+<h2>Entendendo o Algoritmo</h2>
+<p>Para entender o Algoritmo de Karatsuba, o jeito mais simples é fazendo as contas na mão e verificando se o resultado bate com o esperado:</p>
+<blockquote class="question">
+<p>Exercício</p>
+<p>Faça a seguinte multiplicalção utilizando o algoritmo: \(3408 \times 1735 = \,?\)</p>
+<p>Lembrando que o passo a passo do algorítmo é:</p>
+<ol>
+<li>
+<p>Separar ambos os números em duas partes:</p>
+<ul>
+<li>Primeiro número em a e b;</li>
+<li>Segundo número em c e d.</li>
+</ul>
+</li>
+<li>
+<p>Achar P e S, que são respectivamente: \(a \times c \; \; e \; \; b \times d\);</p>
+</li>
+<li>
+<p>Calcular  \(\; T \, = \; (a + b) \times (c + d)\);</p>
+</li>
+<li>
+<p>Calcular \(Q\) que é igual a \((ad + bc)\) porém pode ser obtido por \(\; T - S - P\);</p>
+</li>
+<li>
+<p>E finalmente chegar no resultado final:
+\[R \, = \; P \times 10^n + Q \times 10^{n/2} + S\]</p>
+</li>
+</ol>
+<p>Sendo \(n\) o número de algarismos.</p>
+<details class="answer">
+<summary>Gabarito</summary>
+<ol>
+<li>
+<p>Separando os números:</p>
+<ul>
+<li>\(a = 34\)</li>
+<li>\(b = 08\)</li>
+<li>\(c = 17\)</li>
+<li>\(d = 35\)</li>
+</ul>
+</li>
+<li>
+<p>Achando \(P \; e \; S\):</p>
+<ul>
+<li>\(P: \; 34 \times 17 = \; 578\)</li>
+<li>\(S: \; 08 \times 35 = \; 280\)</li>
+</ul>
+</li>
+<li>
+<p>Calculando \(T \,\): \(\; (34 + 08) \times (17 + 35) = \; 2184\)</p>
+</li>
+<li>
+<p>Calculando \(Q \,\): \(\; T - S - P = \; 1326\)</p>
+</li>
+<li>
+<p>Resultado final:
+\[R: \; 578 \times 10^4 + Q \times 10^{4/2} + S = \; 5.912.880\]</p>
+</li>
+</ol>
+</details>
+</blockquote>
+<p>Agora você deve estar pensando <em>“esse método é inútil… faço muito mais rápido na calculadora”</em>, mas não é exatamente assim que seu computador pensa! Antes de entender porque o algoritmo de karatsuba é mais rápido no computador precisamos analisar como ele seria construido em código.</p>
+<p>Veja o pseudocódigo a seguir e analise-o:</p>
+<pre><code class="language-py">karatsuba(num1, num2):
+
+    if (num1 &lt; 10) or (num2 &lt; 10)
+        return num1 × num2
+    
+    # Calcula o tamanho dos números. 
+    m = min(size_base10(num1), size_base10(num2))
+    m2 = floor(m / 2) # Pega o menor número de algarismos e divide por 2 
+    
+    # Separa os números em duas partes. 
+    high1, low1 = split_at(num1, m2)
+    high2, low2 = split_at(num2, m2)
+    
+    # 3 chamas recursivas feitas para números de aproximadamente metade do tamanho (n/2). 
+    z0 = karatsuba(low1, low2)
+    z1 = karatsuba((low1 + high1), (low2 + high2))
+    z2 = karatsuba(high1, high2)
+    
+    return (z2 × 10 ^ (m2 × 2)) + ((z1 - z2 - z0) × 10 ^ m2) + z0
+</code></pre>
+<p><em>“Tá… continuo achando esse processo todo inútil, olha quanta linha pra fazer uma multiplicação comúm!”</em>. Realmente ainda parece improvável que esse método seja mais rápido que uma multiplicação comúm, então vamos fazer o seguinte:</p>
+<blockquote class="question">
+<p>Exercício</p>
+<p>Vamos calcular a complexidade do algoritmo de karatsuba, lembra como faz?</p>
+<blockquote class="warning">
+<p>Dica</p>
+<p>São três chamadas recursivas que recebem \(\frac{n}{2}\) como parâmetro.</p>
+</blockquote>
+<details class="answer">
+<summary>Gabarito</summary>
+<p><kbd>imagem da árvore aqui</kbd></p>
+<p><kbd>resolução da complexidade aqui</kbd></p>
+</details>
+</blockquote>
+<p>Olha só, chegamos em \(O(n^{1.58496250072})\), acredita em mim agora que karatsuba consome menos tempo que uma multiplicação comúm?</p>
+<ol>
+<li>
+<p>listas;</p>
+</li>
+<li>
+<p>ordenadas,</p>
+</li>
+</ol>
+<p>assim como</p>
+<ul>
+<li>
+<p>listas;</p>
+</li>
+<li>
+<p>não-ordenadas</p>
+</li>
+</ul>
+<p>e imagens. Lembre que todas as imagens devem estar em uma subpasta <em>img</em>.</p>
+<figure class="img"><img src="img/logo.png" alt=""></figure>
+<p>Para tabelas, usa-se a <a href="https://fletcher.github.io/MultiMarkdown-6/syntax/tables.html" target="_blank">notação do
+MultiMarkdown</a>,
+que é muito flexível. Vale a pena abrir esse link para saber todas as
+possibilidades.</p>
+<figure class="table"><table>
+<thead>
+<tr>
+<th>coluna a</th>
+<th>coluna b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></figure>
+<p>Ao longo de um texto, você pode usar <em>itálico</em>, <strong>negrito</strong>, <span class="md-colorify md-colorify--red">vermelho</span> e
+<kbd>tecla</kbd>. Também pode usar uma equação LaTeX: \(f(n) \leq g(n)\). Se for muito
+grande, você pode isolá-la em um parágrafo.</p>
+<p>\[\lim_{n \rightarrow \infty} \frac{f(n)}{g(n)} \leq 1\]</p>
+<p>Para inserir uma animação, use <code class="language-md">;</code> seguido do nome de uma pasta onde as
+imagens estão. Essa pasta também deve estar em <em>img</em>.</p>
+<div class="animation"><img class="frame" src="img/bubble/bubble01.png" alt="1"><img class="frame" src="img/bubble/bubble02.png" alt="2"><img class="frame" src="img/bubble/bubble03.png" alt="3"><img class="frame" src="img/bubble/bubble04.png" alt="4"><img class="frame" src="img/bubble/bubble05.png" alt="5"><img class="frame" src="img/bubble/bubble06.png" alt="6"><img class="frame" src="img/bubble/bubble07.png" alt="7"><img class="frame" src="img/bubble/bubble08.png" alt="8"><img class="frame" src="img/bubble/bubble09.png" alt="9"><img class="frame" src="img/bubble/bubble10.png" alt="10"><img class="frame" src="img/bubble/bubble11.png" alt="11"><img class="frame" src="img/bubble/bubble12.png" alt="12"><img class="frame" src="img/bubble/bubble13.png" alt="13"><img class="frame" src="img/bubble/bubble14.png" alt="14"><img class="frame" src="img/bubble/bubble15.png" alt="15"><img class="frame" src="img/bubble/bubble16.png" alt="16"><img class="frame" src="img/bubble/bubble17.png" alt="17"><img class="frame" src="img/bubble/bubble18.png" alt="18"><img class="frame" src="img/bubble/bubble19.png" alt="19"><img class="frame" src="img/bubble/bubble20.png" alt="20"><img class="frame" src="img/bubble/bubble21.png" alt="21"><img class="frame" src="img/bubble/bubble22.png" alt="22"><img class="frame" src="img/bubble/bubble23.png" alt="23"><img class="frame" src="img/bubble/bubble24.png" alt="24"><img class="frame" src="img/bubble/bubble25.png" alt="25"><img class="frame" src="img/bubble/bubble26.png" alt="26"><img class="frame" src="img/bubble/bubble27.png" alt="27"><img class="frame" src="img/bubble/bubble28.png" alt="28"><img class="frame" src="img/bubble/bubble29.png" alt="29"><img class="frame" src="img/bubble/bubble30.png" alt="30"><img class="frame" src="img/bubble/bubble31.png" alt="31"><img class="frame" src="img/bubble/bubble32.png" alt="32"><img class="frame" src="img/bubble/bubble33.png" alt="33"><img class="frame" src="img/bubble/bubble34.png" alt="34"><img class="frame" src="img/bubble/bubble35.png" alt="35"><img class="frame" src="img/bubble/bubble36.png" alt="36"><img class="frame" src="img/bubble/bubble37.png" alt="37"><img class="frame" src="img/bubble/bubble38.png" alt="38"><img class="frame" src="img/bubble/bubble39.png" alt="39"><img class="frame" src="img/bubble/bubble40.png" alt="40"><img class="frame" src="img/bubble/bubble41.png" alt="41"><img class="frame" src="img/bubble/bubble42.png" alt="42"><img class="frame" src="img/bubble/bubble43.png" alt="43"><img class="frame" src="img/bubble/bubble44.png" alt="44"><img class="frame" src="img/bubble/bubble45.png" alt="45"><img class="frame" src="img/bubble/bubble46.png" alt="46"><img class="frame" src="img/bubble/bubble47.png" alt="47"><img class="frame" src="img/bubble/bubble48.png" alt="48"><img class="frame" src="img/bubble/bubble49.png" alt="49"><img class="frame" src="img/bubble/bubble50.png" alt="50"><img class="frame" src="img/bubble/bubble51.png" alt="51"><img class="frame" src="img/bubble/bubble52.png" alt="52"><img class="frame" src="img/bubble/bubble53.png" alt="53"><img class="frame" src="img/bubble/bubble54.png" alt="54"><img class="frame" src="img/bubble/bubble55.png" alt="55"><img class="frame" src="img/bubble/bubble56.png" alt="56"><img class="frame" src="img/bubble/bubble57.png" alt="57"><img class="frame" src="img/bubble/bubble58.png" alt="58"><img class="frame" src="img/bubble/bubble59.png" alt="59"><img class="frame" src="img/bubble/bubble60.png" alt="60"><img class="frame" src="img/bubble/bubble61.png" alt="61"><img class="frame" src="img/bubble/bubble62.png" alt="62"><img class="frame" src="img/bubble/bubble63.png" alt="63"><img class="frame" src="img/bubble/bubble64.png" alt="64"><img class="frame" src="img/bubble/bubble65.png" alt="65"><img class="frame" src="img/bubble/bubble66.png" alt="66"><img class="frame" src="img/bubble/bubble67.png" alt="67"><img class="frame" src="img/bubble/bubble68.png" alt="68"><img class="frame" src="img/bubble/bubble69.png" alt="69"><img class="frame" src="img/bubble/bubble70.png" alt="70"><img class="frame" src="img/bubble/bubble71.png" alt="71"></div>
+<p>Você também pode inserir código, inclusive especificando a linguagem.</p>
+<pre><code class="language-py">def f():
+    print('hello world')
+</code></pre>
+<pre><code class="language-c">void f() {
+    printf("hello world\n");
+}
+</code></pre>
+<p>Se não especificar nenhuma, o código fica com colorização de terminal.</p>
+<pre><code class="terminal nohighlight">hello world
+</code></pre>
+<blockquote class="warning">
+<p>Aviso</p>
+<p>Este é um exemplo de aviso, entre <code class="language-md">!!!</code>.</p>
+</blockquote>
+<blockquote class="question">
+<p>Exercício</p>
+<p>Este é um exemplo de exercício, entre <code class="language-md">???</code>.</p>
+<details class="answer">
+<summary>Gabarito</summary>
+<p>Este é um exemplo de gabarito, entre <code class="language-md">:::</code>.</p>
+</details>
+</blockquote>
+
+
+            </main>
+            <footer>
+                <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+                    <img alt="CC BY-SA 4.0" src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png" title="Creative Commons Attribution-ShareAlike 4.0 International License"/>
+                </a>
+                © 2021 Marcelo Hashimoto
+            </footer>
+        </div>
+    </body>
+</html>
