@@ -24,20 +24,19 @@
             <main>
 
 <h1>Algoritmo de Karatsuba</h1>
-<h2>Entendendo o Algoritmo</h2>
-<p>O algoritmo de Karatsuba é um algoritmo de multiplicação rápida. Ele reduz a multiplicação de dois números de <strong>\(n\)</strong> algarismos a, no máximo, \(n^{log_2 3} \approx n^{1.58}\) multiplicações de um dígito, sendo consideravelmente mais rápido e menos custoso que o algoritmo tradicional, que requer \(n^2\) multiplicações de um digito para chegar ao mesmo resultado.</p>
-<p>Sabemos que qualquer número pode ser representado por uma soma de parte de seus digitos multiplicados por \(10^m\), sendo \(m\) a quantidade de casas decimais que faltam para que a primeira parte do número chegue na sua casa decimal inicial (\(x = x_1 10^m + x_0\) ou \(1234 = 12 \times 10^2 + 34\)). Então se multiplicamos dois números decompostos dessa maneira, obtemos:</p>
-<p>\[x = x_1 10^m + x_0\]
-\[y = y_1 10^m + y_0\]
-\[ \]
-\[xy = (x_1 10^m + x_0)(y_1 10^m + y_0)\]
-\[\quad = z_2 10^{2m} + z_1 10^m + z_0\]</p>
-<p>Onde:</p>
-<p>\[z_2 =  x_1 y_1\]
-\[z_1 =  x_1 y_0 + x_0 y_1\]
-\[z_0 = x_0 y_0\]</p>
-<p>Esse método requer quatro multiplicações, porém Karatsuba percebeu que esse número pode ser reduzido para três, uma vez que \(z_1\) pode ser representado da seguinte forma:</p>
-<p>\[z_1 = (x_0 + x_1)(y_1 + y_0) - z_2 - z_0\]</p>
+<p>Na escola aprendemos uma maneira de fazer multiplicações que vamos chamar de algoritmo escolar. O algoritmo escolar consiste em fazer a multiplicação, algarismo por algarismo, dos fatores envolvidos e depois somar os resultados, fazendo os shifts necessários, pra chegar no produto final.</p>
+<p>O Algoritmo de Karastuba oferece uma alternativa a essa multiplicação do algoritmo escolar, mas antes de apresenta-lo, para que a utilização dele faça sentido, vamos determinar qual a complexidade de uma multiplicação normal.</p>
+<blockquote class="question">
+<p>Atividade</p>
+<p>Determine a complexidade de uma multiplicação de dois números de \(n\) dígitos feita pelo algoritmo escolar, na notação \(O()\), sendo que \(n\) é a quantidade de algarismos de cada fator envolvido e a operação base é uma multiplicação com um digito só.</p>
+<details class="answer">
+<summary>Gabarito</summary>
+<p>Uma multiplicação de dois número com \(n\) dígitos implica em \(n \times n\) operações de um dígito, portanto sua complexidade é de \(O(n^2)\)</p>
+</details>
+</blockquote>
+<p>Uma operação com complexidade \(O(n^2)\) pode ser muito custoso em questão de tempo de processamento quando trabalhamos com uma quantidade grande de operações ou operações com muitos algarismos em cada fator, sendo assim, Karatsuba se propõe a diminuir essa complexidade para multiplicações e com isso diminuir o custo dessas operações para os nossos queridos precessadores. Para saber se esse é realmente o caso, precisamos primeiro entender o algoritmo em si.</p>
+<h2>Entendendo o Algoritmo de Karatsuba</h2>
+<p>Ok… temos que uma multiplicação feita usando o algoritmo escolar tem uma complexidade \(O(n^2)\) e que Karatsuba diminui essa complexidade, aumentando a velocidade de processamento da mesma operação, porém, não bem a mesma. O algoritmo de Karatsuba pode ser simplificado em cinco passos que apresentaremos a seguir.</p>
 <p>Para entender melhor o Algoritmo de Karatsuba, o jeito mais simples é fazendo as contas na mão e verificando se o resultado bate com o esperado.</p>
 <p>Pegue uma calculadora e vamos lá, começaremos com algo simples.</p>
 <blockquote class="question">
@@ -49,12 +48,14 @@
 </details>
 </blockquote>
 <p>Maravilha, agora anote esse resultado em algum lugar para fazermos o algoritmo.</p>
+<p>Primeiro de tudo, vamos relembrar um conceito muito simples mas que é esquecido com frequência, <strong>qualquer</strong> número pode ser representado por uma soma de seus algarismos multiplicados por \(10^m\), sendo \(m\) a quantidade de casas decimais que faltam para que a primeira parte do número chegue na sua casa decimal inicial. Assim, ao decompormos o um número qualquer \(\alpha\beta\), em duas partes obtemos:</p>
+<p>\[\theta = \alpha 10^1 + \beta 10^0\]</p>
 <blockquote class="question">
 <p>Karatsuba 1</p>
-<p>A primeira coisa a se fazer é dividir os números \(34 \text{ e } 17\) em duas partes cada:</p>
+<p>A primeira coisa a se fazer é separar os números \(34 \text{ e } 17\) em duas partes:</p>
 <ul>
-<li>Primeiro número em duas partes que chamaremos de \(a \text{ e } b\);</li>
-<li>Segundo número em duas partes que chamaremos de \(c \text{ e } d\).</li>
+<li>34 em \(a \text{(maior) e } b \text{(menor)}\);</li>
+<li>17 em \(c \text{(maior) e } d \text{(menor)}\);</li>
 </ul>
 <details class="answer">
 <summary>Gabarito</summary>
@@ -66,10 +67,17 @@
 </ul>
 </details>
 </blockquote>
-<p>Como vimos agora pouco, o resultado final dessa multiplicação pode ser escrito como \((3 \times 1)10^2 + (3 \times 7 + 4 \times 1)10^1 + (4 \times 7)\) (perceba que o \(m\) nesse caso é 1, pois dividimos os números em duas partes, ou seja, \(m = n/2\)), mas vamos seguir os passos para chegar em uma conta com só três multiplicações, seu computador agradece.</p>
+<p>Agora, iremos realizar a multiplicação destes números compostos para chegar numa equação que nos ajudará a chegar mais prómixos do algoritmo, para isso vamos ver como funcionaria para fazer o produto de \(x \text{ e } y\) onde:</p>
+<p>\[x = x_1 10^m + x_0\]
+\[y = y_1 10^m + y_0\]
+\[ \]
+\[xy = (x_1 10^m + x_0)(y_1 10^m + y_0)\]</p>
+<p>Fazendo a distributiva:</p>
+<p>\[x y = x_1 y_1 10^{2m} + (x_1 y_0 + x_0 y_1) 10^m + x_0 y_0\]</p>
+<p>Maravilha, mas esse ainda é só o começo, perceba que por enquanto nós temos <strong>4 multiplicações</strong> (as multiplicações por \(10^m\) não são consideradas operações de multiplicação pois podem ser atingidas através de shifts) o que não parece muito bom comparado ao que o algoritmo propõe, mas segura firme que logo logo vamos diminuir este número.</p>
 <blockquote class="question">
 <p>Karatsuba 2</p>
-<p>Agora, calcule \(P \text{ e } S\), que são respectivamente: \(a \times c \; \; e \; \; b \times d\);</p>
+<p>Agora, calcule \(P \text{ e } S\), que são respectivamente: \(a \times c \; \;\text{ e } \;\; b \times d\);</p>
 <details class="answer">
 <summary>Gabarito</summary>
 <ul>
@@ -78,7 +86,8 @@
 </ul>
 </details>
 </blockquote>
-<p>É agora que vem o <strong>pulo do gato</strong>! Queremos chegar em \((a \times d) + (b \times c)\) só que sem essas duas multiplicações, então faça o seguinte:</p>
+<p>Agora, o resultado final de nossa multiplicação pode ser escrito como \(P10^2 + (ad + bc)10^1 + (S)\) neste caso, nosso  \(m\) é 1, pois dividimos os números em duas partes, ou seja, \(m = n/2\), mas como dito anteriormente, queremos diminuir o número de multiplicações presentes, o seu computador agradece.</p>
+<p>É agora que entra o famoso <strong>pulo do gato</strong>! Queremos chegar em \((a \times d) + (b \times c)\) só que sem essas duas multiplicações, para isso, vamos utilizar utilizar uma sacada do nosso querido <em>Gauss</em>, primeiro faça o seguinte:</p>
 <blockquote class="question">
 <p>Karatsuba 3</p>
 <p>Calcule  \(\; T \, = \; (a + b) \times (c + d)\).</p>
@@ -87,7 +96,7 @@
 <p>\(T \,\): \(\; (3 + 4) \times (1 + 7) = \; 56\)</p>
 </details>
 </blockquote>
-<p>Agora, pra chegar em \((ad + bc)\) é simples! O truque é o seguinte, iremos subtrair os termos \(P\text{ e }S\) de \(T\). Esse passo elimina uma das multiplicações que seriam necessarias inicialmente.</p>
+<p>Agora, pra chegarmos em \((ad + bc)\) é bem simples! O truque é o seguinte, iremos subtrair os termos \(P\text{ e }S\) de \(T\). Esse passo elimina uma das multiplicações que seriam necessárias inicialmente.</p>
 <blockquote class="question">
 <p>Karatsuba 4</p>
 <p>Faça o cálculo: \(\; T - S - P\) e chame o resultado de \(Q\).</p>
@@ -96,6 +105,12 @@
 <p>\(Q \,\): \(\; T - S - P = \; 25\)</p>
 </details>
 </blockquote>
+<p>Este truque funciona da seguinte forma, ao fazermos a distributiva \((a + b) \times (c + d) \rightarrow T\) e subtrairmos \(ac \rightarrow P \text{ e } bd \rightarrow S\), isso nos resulta em:</p>
+<p>\[ac + ad + bc + bd - ac - bd\]
+\[\quad = ad + bc\]</p>
+<p>Isso nos resulta na equação final a seguir:</p>
+<p>\[R \, = \; ac \times 10^n + ((a + b) \times (c + d) - P - S) \times 10^{n/2} + bd\]</p>
+<p>Note que agora, realizando este passo, nós temos um total de <strong>3 multiplicações</strong> no nosso algoritmo, <em>now we’re talking</em>.</p>
 <p>Agora já estamos com a faca e o queijo na mão, é só partir pro abraço. Lembra daquela equação final que vimos antes, pode aplicar.</p>
 <blockquote class="question">
 <p>Karatsuba 5</p>
@@ -203,7 +218,7 @@ Relembrando, o motivo de multiplicarmos \(P\text{ por } 10^n\) é para deslocarm
 <p>Utilize a altura obtida em <em><strong>Complexidade 1</strong></em>, substitua-a na equação simplificada do último exercício para encontrar a complexidade.</p>
 <blockquote class="warning">
 <p>Dica de Ouro</p>
-<p>Use e abuse das propriedades logaritimicas, principalmente da <strong>mudança de base</strong>!</p>
+<p>Use a <strong>mudança de base</strong> duas vezes para inverter a base com o logaritmando!</p>
 </blockquote>
 <details class="answer">
 <summary>Gabarito</summary>
@@ -225,7 +240,7 @@ Relembrando, o motivo de multiplicarmos \(P\text{ por } 10^n\) é para deslocarm
 <figure class="img"><img src="img/graph.png" alt=""></figure>
 <blockquote class="question">
 <p>Desafio Hardcore</p>
-<p>Faça a seguinte multiplicalção utilizando o algoritmo: \(3408 \times 1735 = \,?\)</p>
+<p>Faça a seguinte multiplicação utilizando o algoritmo: \(3408 \times 1735 = \,?\)</p>
 <details class="answer">
 <summary>Gabarito</summary>
 <ol>
